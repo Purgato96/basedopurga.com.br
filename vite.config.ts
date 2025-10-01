@@ -11,13 +11,18 @@ export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
-    tailwindcss(),
+    tailwindcss()
   ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@': path.resolve(__dirname, './src'),
-    },
+      '@': path.resolve(__dirname, './src')
+    }
+  },
+  preview: {
+    host: '0.0.0.0',          // permite acesso externo
+    port: 3000,
+    allowedHosts: ['basedopurga.com.br', 'www.basedopurga.com.br']
   },
   server: {
     host: '0.0.0.0', // escuta conexões externas (docker)
