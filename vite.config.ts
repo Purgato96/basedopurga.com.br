@@ -19,11 +19,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
-  preview: {
-    host: '0.0.0.0',          // permite acesso externo
-    port: 3000,
-    allowedHosts: ['basedopurga.com.br', 'www.basedopurga.com.br']
-  },
   server: {
     host: '0.0.0.0', // escuta conexões externas (docker)
     port: 3000,      // garante que rode na porta 3000
