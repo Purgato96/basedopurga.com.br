@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import axios from '@/axios'; // ajuste para seu axios configurado
+import axios from '@/lib/axios'; // ajuste para seu axios configurado
 
 const privateRooms = ref([]);
 const loading = ref(true);
