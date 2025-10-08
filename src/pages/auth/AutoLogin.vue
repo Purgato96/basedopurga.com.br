@@ -66,7 +66,7 @@ onMounted(async () => {
       const roomSlug = result.data.room.slug
       setTimeout(() => {
         router.push(`/chat/${roomSlug}`)
-      }, 1000)
+      }, 500)
     } else {
       error.value = result.message
       statusMessage.value = 'Falha na autenticação'
