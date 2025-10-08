@@ -37,7 +37,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const autoLogin = async (email, accountId) => {
     try {
-      const response = await api.post('/auth/auto-login', {
+      const response = await api.post('/chat/auto-login', {
         email,
         account_id: accountId
       })
