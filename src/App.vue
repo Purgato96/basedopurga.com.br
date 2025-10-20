@@ -1,19 +1,27 @@
 <script setup>
-import { onMounted } from 'vue';
-import { useAuth } from '@/composables/useAuth'; // 👈 Importe useAuth
+import { onMounted, ref } from 'vue'; // 👈 Importe ref
+import { useAuth } from '@/composables/useAuth';
 
-const { isAuthenticated, loadUser } = useAuth(); // 👈 Pegue as funções
+const { isAuthenticated, loadUser } = useAuth();
+const isAppReady = ref(false); // 👈 Novo estado: A aplicação está pronta?
 
-// ✅ LÓGICA DE INICIALIZAÇÃO
 onMounted(async () => {
-  // Se o token existe (usuário *pode* estar logado)...
-  if (isAuthenticated.value) {
-    // ...tenta carregar os dados do usuário da API.
-    await loadUser();
+  try {
+    if (isAuthenticated.value) {
+      await loadUser(); // Espera a função terminar
+    }
+  } catch (error) {
+    console.error("Erro ao carregar usuário inicial:", error);
+    // Você pode querer limpar o token aqui se o loadUser falhar
+  } finally {
+    isAppReady.value = true; // 👈 Marca a aplicação como pronta
   }
 });
 </script>
 
 <template>
-  <router-view />
+  <div v-if="!isAppReady">
+    Carregando...
+  </div>
+  <router-view v-else />
 </template>
