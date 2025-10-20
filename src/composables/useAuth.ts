@@ -62,6 +62,13 @@ export function useAuth() {
     token.value = null;
   };
 
+  function can(permissionName: string) {
+    if (!user.value || !(user.value as any).permissions) {
+      return false;
+    }
+    return (user.value as any).permissions.includes(permissionName);
+  }
+
   return {
     user: computed(() => user.value),
     token: computed(() => token.value),
@@ -71,5 +78,6 @@ export function useAuth() {
     login,
     register,
     logout,
+    can,
   };
 }
