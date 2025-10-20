@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 
 const router = useRouter();
 const { rooms, loading, fetchRooms, createRoom } = useRooms();
-const { user, can } = useAuth();
+const { user, can, isAuthenticated } = useAuth();
 
 const showCreateModal = ref(false);
 const processing = ref(false);
@@ -75,7 +75,7 @@ onMounted(() => {
             <!-- Header com botão para criar sala -->
             <div class="flex justify-between items-center mb-6">
               <h3 class="text-lg font-medium text-gray-900">Suas Salas de Chat</h3>
-              <button v-if="can('create-rooms')"
+              <button v-if="isAuthenticated && can('create-rooms')"
                 @click="showCreateModal = true"
                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               >
@@ -118,7 +118,7 @@ onMounted(() => {
               </div>
               <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhuma sala encontrada</h3>
               <p class="text-gray-500 mb-4">Crie sua primeira sala de chat para começar.</p>
-              <button v-if="can('create-rooms')"
+              <button v-if="isAuthenticated && can('create-rooms')"
                 @click="showCreateModal = true"
                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               >
