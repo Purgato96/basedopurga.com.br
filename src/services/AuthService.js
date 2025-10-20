@@ -64,11 +64,18 @@ export class AuthService {
     const token = this.getToken();
     if (!token) return false;
 
-    // Opcional: verificar se token não está expirado
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
+      // ✅ LÓGICA CORRIGIDA:
+      // 1. Se 'exp' NÃO EXISTE, o token é infinito, então é VÁLIDO.
+      if (typeof payload.exp === 'undefined') {
+        return true;
+      }
+      // 2. Se 'exp' EXISTE, verifica se ainda não expirou.
       return payload.exp * 1000 > Date.now();
-    } catch {
+    } catch (e) {
+      // Se o token for inválido/malformado
+      console.error("Erro ao decodificar token JWT:", e); // Adiciona log
       return false;
     }
   }
