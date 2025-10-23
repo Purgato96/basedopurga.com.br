@@ -10,7 +10,9 @@ onMounted(async () => {
     if (isAuthenticated.value) {
       await loadUser(); // Espera a função terminar
     }
-  } catch (error)
+  } catch (error) {
+    console.error("Erro ao carregar usuário inicial:", error);
+    // Você pode querer limpar o token aqui se o loadUser falhar
   } finally {
     isAppReady.value = true; // 👈 Marca a aplicação como pronta
   }
