@@ -17,9 +17,6 @@ export function useWebSocket() {
 
     connectionStatus.value = 'connecting';
 
-    // Log do Pusher para debug
-    (Pusher as any).logToConsole = true;
-
     echoInstance = new Echo({
       broadcaster: 'pusher',
       key: import.meta.env.VITE_PUSHER_APP_KEY,
