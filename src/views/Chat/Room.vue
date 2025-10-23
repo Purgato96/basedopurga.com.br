@@ -511,6 +511,7 @@ watch(
 
 onMounted(async () => {
   await loadRoomData();
+  console.log('canManageUsers:', canManageUsers.value)
   scrollToBottom(true);
 });
 
