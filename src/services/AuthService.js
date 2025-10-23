@@ -61,23 +61,15 @@ export class AuthService {
   }
 
   isAuthenticated() {
-    console.log("--- Verificando autenticação (isAuthenticated) ---"); // LOG 1
-
     const token = this.getToken();
     if (!token) {
-      console.log("Resultado: Falso (sem token)"); // LOG 2
       return false;
     }
-    console.log("Token encontrado:", token); // LOG 3
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      console.log("Payload do token decodificado:", payload); // LOG 4
-
       // Verifica se a propriedade 'exp' existe
       if (typeof payload.exp === 'undefined') {
-        console.log("Verificação 'exp': Não existe. Considerado válido (infinito)."); // LOG 5
-        console.log("Resultado: Verdadeiro"); // LOG 6
         return true;
       }
 
@@ -86,17 +78,9 @@ export class AuthService {
       const agora = Date.now();
       const aindaValido = expiraEm > agora;
 
-      console.log("Verificação 'exp': Existe."); // LOG 7
-      console.log("Expira em (ms):", expiraEm, `(${new Date(expiraEm).toLocaleString()})`); // LOG 8
-      console.log("Agora (ms):    ", agora, `(${new Date(agora).toLocaleString()})`); // LOG 9
-      console.log("Ainda é válido?", aindaValido); // LOG 10
-      console.log("Resultado:", aindaValido ? "Verdadeiro" : "Falso"); // LOG 11
-
       return aindaValido;
 
     } catch (e) {
-      console.error("Erro CRÍTICO ao decodificar token JWT:", e); // LOG 12
-      console.log("Resultado: Falso (erro na decodificação)"); // LOG 13
       return false;
     }
   }
