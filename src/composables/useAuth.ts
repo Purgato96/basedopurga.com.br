@@ -62,32 +62,11 @@ export function useAuth() {
     token.value = null;
   };
 
-  /*function can(permissionName: string) {
+  function can(permissionName: string) {
     if (!user.value || !(user.value as any).permissions) {
       return false;
     }
     return (user.value as any).permissions.includes(permissionName);
-  }*/
-  // Em src/composables/useAuth.ts
-
-  function can(permissionName: string) {
-    console.log(`can(): Verificando permissão '${permissionName}'...`); // LOG A
-    if (!user.value) {
-      console.log(`can(): Retornando false (user.value é null/undefined)`); // LOG B
-      return false;
-    }
-    // Adicione um log para ver o objeto user completo AQUI
-    console.log(`can(): Objeto user.value atual:`, JSON.parse(JSON.stringify(user.value))); // LOG C (stringify/parse para evitar problemas com proxy do Vue)
-
-    const permissions = (user.value as any).permissions;
-    if (!permissions || !Array.isArray(permissions)) {
-      console.log(`can(): Retornando false (user.value.permissions não existe ou não é um array)`, permissions); // LOG D
-      return false;
-    }
-
-    const hasPermission = permissions.includes(permissionName);
-    console.log(`can(): Permissão '${permissionName}' ${hasPermission ? 'ENCONTRADA' : 'NÃO ENCONTRADA'} na lista.`); // LOG E
-    return hasPermission;
   }
 
   return {
