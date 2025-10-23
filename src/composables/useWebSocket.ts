@@ -34,7 +34,7 @@ export function useWebSocket() {
     pusher.connection.bind('connected', () => {
       connectionStatus.value = 'connected';
     });
-    pusher.connection.bind('state_change', (s: any) => console.log('WS state', s));
+    pusher.connection.bind('state_change');
     pusher.connection.bind('error', (e: any) => {
       console.log('WS error', e);
       connectionStatus.value = 'error';
