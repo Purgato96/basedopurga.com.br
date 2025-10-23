@@ -217,7 +217,13 @@ const btnActivePriv = computed(() =>
 const msgSent = 'self-end bg-blue-500 text-white';
 const msgRecv = 'self-start bg-gray-200 text-gray-800';
 
-const canManageUsers = computed(() => can('add-member-room'));
+const canManageUsers = computed(() => {
+  const permission = 'add-member-room';
+  console.log(`Computed 'canManageUsers': Verificando permissão '${permission}'...`); // LOG F
+  const result = can(permission); // Chama a função can()
+  console.log(`Computed 'canManageUsers': Resultado da função can() foi: ${result}`); // LOG G
+  return result;
+});
 const canSendMessages = computed(() => can('send-messages'));
 const canLeaveRoom = computed(() => can('leave-room'));
 const canDeleteAnyMessage = computed(() => can('delete-any-message'));
