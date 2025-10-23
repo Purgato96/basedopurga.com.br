@@ -34,15 +34,28 @@ export function useWebSocket() {
     pusher.connection.bind('connected', () => {
       connectionStatus.value = 'connected';
     });
-    pusher.connection.bind('state_change');
-    pusher.connection.bind('error', (e: any) => {
-      connectionStatus.value = 'error';
+    pusher.connection.bind('connecting', () => { // Adiciona listener para connecting
+      connectionStatus.value = 'connecting';
     });
-    pusher.connection.bind('failed', () => {
+    pusher.connection.bind('disconnected', () => { // Adiciona listener para disconnected
+      connectionStatus.value = 'disconnected';
+    });
+    pusher.connection.bind('error', (err: any) => {
+      console.error("WebSocket Connection Error:", err); // Mantém erros críticos
       connectionStatus.value = 'error';
+      // Considerar chamar disconnect() aqui para limpar
+      disconnect();
+    });
+    // Opcional: Remover listeners 'failed' e 'unavailable' se 'error' for suficiente
+    pusher.connection.bind('failed', () => {
+      console.error("WebSocket Connection Failed Permanently.");
+      connectionStatus.value = 'error';
+      disconnect();
     });
     pusher.connection.bind('unavailable', () => {
-      connectionStatus.value = 'error';
+      console.warn("WebSocket Connection Unavailable. Tentando reconectar...");
+      // O Pusher tenta reconectar automaticamente, o status pode voltar para 'connecting'
+      connectionStatus.value = 'connecting'; // Ou 'disconnected'
     });
 
     return echoInstance;

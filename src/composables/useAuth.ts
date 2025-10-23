@@ -69,6 +69,7 @@ export function useAuth() {
     return (user.value as any).permissions.includes(permissionName);
   }
 
+
   return {
     user: computed(() => user.value),
     token: computed(() => token.value),
