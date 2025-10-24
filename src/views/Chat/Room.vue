@@ -219,7 +219,7 @@ const msgRecv = 'self-start bg-gray-200 text-gray-800';
 
 const canManageUsers = computed(() => can('add-member-room'));
 const canSendMessages = computed(() => can('send-messages'));
-const canLeaveRoom = computed(() => can('leave-room'));
+const canLeaveRoom = computed(() => can('leave-room') && !user.value?.account_id);
 const canDeleteAnyMessage = computed(() => can('delete-any-message'));
 const canEditAnyMessage = computed(() => can('edit-any-message'));
 const canDeleteOwnMessage = computed(() => can('delete-messages'));
