@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import { useRooms } from '@/composables/useRooms'
 import { useAuth } from '@/composables/useAuth';
@@ -11,6 +11,7 @@ const { user, can, isAuthenticated } = useAuth();
 
 const showCreateModal = ref(false);
 const processing = ref(false);
+const isRedirecting = ref(false);
 
 const form = ref({
   name: '',
@@ -61,10 +62,28 @@ const formatDate = (date) => {
 const goToRoom = (slug) => {
   router.push({ name: 'chat-room', params: { slug } });
 };
-
+watchEffect(() => {
+  // Verifica se o usuário está carregado E se ele tem um account_id
+  if (user.value && user.value.account_id) {
+    const accountId = user.value.account_id;
+    const expectedSlug = `sala-${accountId.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`; // Calcula slug esperado
+    console.log(`Index.vue: Usuário Interacti detectado (account_id: ${accountId}). Redirecionando para ${expectedSlug}...`);
+    // Redireciona imediatamente para a sala esperada
+    router.replace({ name: 'chat-room', params: { slug: expectedSlug } });
+  }
+});
 // ✅ IMPORTANTE: Carrega as salas na montagem
 onMounted(() => {
-  fetchRooms();
+  // Só busca a lista geral de salas se NÃO for um usuário Interacti
+  if (isAuthenticated.value && !(user.value && user.value.account_id)) {
+    console.log("Index.vue: Usuário normal ou guest. Buscando lista de salas...");
+    fetchRooms();
+  } else if (!isAuthenticated.value) {
+    console.log("Index.vue: Guest. Buscando lista de salas públicas...");
+    fetchRooms(); // API retorna só públicas
+  } else {
+    console.log("Index.vue: Usuário Interacti. Redirecionamento em andamento, não busca lista.");
+  }
 });
 </script>
 
@@ -76,29 +95,30 @@ onMounted(() => {
       </h2>
     </template>
 
-    <div class="py-12">
+    <div v-if="isRedirecting" class="text-center py-12 text-gray-600">
+      Redirecionando para sua sala...
+    </div>
+
+    <div v-else class="py-12">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
           <div class="p-6">
-            <!-- Header com botão para criar sala -->
             <div class="flex justify-between items-center mb-6">
               <h3 class="text-lg font-medium text-gray-900">Suas Salas de Chat</h3>
               <button v-if="isAuthenticated && can('create-rooms')"
-                @click="showCreateModal = true"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                      @click="showCreateModal = true"
+                      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               >
                 Nova Sala
               </button>
             </div>
 
-            <!-- Loading -->
             <div v-if="loading" class="text-center py-8">
               <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               <p class="mt-2 text-gray-600">Carregando salas...</p>
             </div>
 
-            <!-- Lista de salas -->
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-else-if="!loading && rooms.length > 0 && !isRedirecting" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div
                 v-for="room in rooms"
                 :key="room.id"
@@ -109,16 +129,14 @@ onMounted(() => {
                 <p class="text-gray-600 text-sm mb-3">{{ room.description || 'Sem descrição' }}</p>
 
                 <div class="flex items-center justify-between text-xs text-gray-500">
-                  <span>{{ room.users_count || 0 }} membros</span>
-                  <span v-if="room.latest_messages?.length">
-                    Última: {{ formatDate(room.latest_messages.created_at) }}
+                  <span>{{ room.users_count !== undefined ? `${room.users_count} membro(s)` : '' }}</span>
+                  <span v-if="room.latest_messages?.length && room.latest_messages[0]?.created_at"> Última: {{ formatDate(room.latest_messages[0].created_at) }}
                   </span>
                 </div>
               </div>
             </div>
 
-            <!-- Estado vazio -->
-            <div v-if="!loading && rooms.length === 0" class="text-center py-12">
+            <div v-else-if="!loading && rooms.length === 0 && !isRedirecting" class="text-center py-12">
               <div class="text-gray-500 mb-4">
                 <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.001 8.001 0 01-7.003-4.165L2 20l4.165-4.003A8.001 8.001 0 0112 4c4.418 0 8 3.582 8 8z" />
@@ -127,18 +145,18 @@ onMounted(() => {
               <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhuma sala encontrada</h3>
               <p class="text-gray-500 mb-4">Crie sua primeira sala de chat para começar.</p>
               <button v-if="isAuthenticated && can('create-rooms')"
-                @click="showCreateModal = true"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                      @click="showCreateModal = true"
+                      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               >
                 Criar Primeira Sala
               </button>
             </div>
+
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Modal para criar sala -->
     <div v-if="showCreateModal && can('create-rooms')" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">

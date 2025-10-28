@@ -1,82 +1,65 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import api from '@/lib/axios'; // Certifique-se que o caminho está correto
+import { onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import api from '@/lib/axios' // Certifique-se que o caminho está correto
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
 
 onMounted(async () => {
-  const email = route.query.email as string;
-  const account_id = route.query.account_id as string;
-  console.log("ChatLogin: Iniciando com", { email, account_id }); // LOG 1
+  const email = route.query.email as string
+  const account_id = route.query.account_id as string
+  console.log('ChatLogin: Iniciando com', { email, account_id })
 
   // Validação inicial
-  // Adicionada verificação para {{user_email}} também, por via das dúvidas
   if (!email || !account_id || email === '{{Email}}' || email === '{{user_email}}' || account_id === '{{account_id}}') {
-    console.error('ChatLogin: Parâmetros de query inválidos ou não substituídos.', route.query); // LOG Erro Params
-    alert('Parâmetros inválidos de auto-login. Verifique a configuração no Interacti.');
-    return router.replace('/login'); // Ou uma página de erro
+    console.error('ChatLogin: Parâmetros de query inválidos.', route.query)
+    alert('Parâmetros inválidos de auto-login.')
+    return router.replace('/login')
   }
 
   try {
-    console.log("ChatLogin: Chamando API /auth/auto-login..."); // LOG 2
-    const response = await api.post('/auth/auto-login', { email, account_id });
-    const data = response.data;
-    const status = response.status;
-    // LOG 3: Mostra a resposta completa da API
-    console.log("ChatLogin: Resposta da API recebida", { status, data: JSON.parse(JSON.stringify(data)) }); // Stringify/Parse para ver objeto real
+    console.log('ChatLogin: Chamando API /auth/auto-login...')
+    const response = await api.post('/auth/auto-login', { email, account_id })
+    const data = response.data
+    const status = response.status
+    console.log('ChatLogin: Resposta da API recebida', {
+      status,
+      data: JSON.parse(JSON.stringify(data))
+    })
 
-    // Verifica token
-    console.log("ChatLogin: Verificando se data.token existe..."); // LOG 4
-    if (!data?.token) {
-      console.error("ChatLogin: ERRO - Token ausente na resposta!", data); // LOG Erro Token
-      throw new Error('Token ausente na resposta da API');
+    // Verifica token E slug da sala na resposta
+    if (!data?.token || !data?.data?.room?.slug) {
+      console.error('ChatLogin: ERRO - Token ou Slug da Sala ausente na resposta!', data)
+      throw new Error('Token ou dados da sala ausentes na resposta da API')
     }
-    console.log("ChatLogin: Token encontrado."); // LOG 5
+    console.log('ChatLogin: Token e Slug encontrados.')
 
-    // Salva token
-    console.log("ChatLogin: Salvando token no localStorage..."); // LOG 6
-    localStorage.setItem('chat_token', data.token);
-    console.log("ChatLogin: Token salvo."); // LOG 7
-
-    // Verifica e salva usuário
-    console.log("ChatLogin: Verificando se data.data.user existe..."); // LOG 8
+    // Salva token e usuário
+    localStorage.setItem('chat_token', data.token)
     if (data?.data?.user) {
-      console.log("ChatLogin: Salvando usuário no localStorage...", data.data.user); // LOG 9
-      localStorage.setItem('user', JSON.stringify(data.data.user));
-      console.log("ChatLogin: Usuário salvo."); // LOG 10
+      localStorage.setItem('user', JSON.stringify(data.data.user))
+      console.log('ChatLogin: Usuário salvo:', data.data.user)
     } else {
-      console.warn("ChatLogin: Aviso - Objeto 'user' não encontrado em data.data.", data?.data); // LOG Aviso User
-      localStorage.removeItem('user'); // Limpa user antigo
+      localStorage.removeItem('user')
+      console.warn('ChatLogin: Aviso - Objeto \'user\' não encontrado em data.data.')
     }
 
-    // Verifica redirect_to
-    console.log("ChatLogin: Verificando se data.data.redirect_to existe..."); // LOG 11
-    const go = data?.data?.redirect_to || '/chat';
-    console.log("ChatLogin: Redirecionando para:", go); // LOG 12
+    // --- CORREÇÃO DO REDIRECIONAMENTO ---
+    const roomSlug = data.data.room.slug // Pega o slug da resposta
+    const redirectTo = `/chat/room/${roomSlug}` // Monta a URL da sala
+    console.log('ChatLogin: Redirecionando DIRETAMENTE para:', redirectTo)
+    router.replace(redirectTo) // Redireciona para a sala específica
+    // --- FIM DA CORREÇÃO ---
+    console.log('ChatLogin: router.replace chamado.')
 
-    // Redireciona
-    router.replace(go);
-    console.log("ChatLogin: router.replace chamado."); // LOG 13
-
-  } catch (e: any) { // Tipagem 'any' para acessar propriedades
-    // Log detalhado do erro que caiu no catch
-    console.error('ChatLogin: ERRO DETALHADO no bloco catch:', {
-      message: e.message,
-      name: e.name,
-      code: e.code,
-      config: e.config, // Detalhes da requisição Axios
-      responseStatus: e.response?.status, // Status HTTP se for erro Axios
-      responseData: e.response?.data, // Corpo da resposta se for erro Axios
-      stack: e.stack // Stack trace do erro
-    }); // LOG Erro Catch Detalhado
-
-    console.error('Auto-login falhou', e); // Log original
-    alert('Não foi possível realizar o auto-login. Verifique o console.');
-    router.replace('/login');
+  } catch (e: any) {
+    console.error('ChatLogin: ERRO DETALHADO no bloco catch:', { /* ... log detalhado ... */ })
+    console.error('Auto-login falhou', e)
+    alert('Não foi possível realizar o auto-login. Verifique o console.')
+    router.replace('/login')
   }
-});
+})
 </script>
 
 <template>
