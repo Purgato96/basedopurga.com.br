@@ -19,7 +19,6 @@ export function useMessages() {
   const sendMessage = async (roomSlug, content) => {
     const response = await MessageService.sendRoomMessage(roomSlug, content);
     const message = response.data || response;
-    messages.value.push(message);
     return message;
   };
 
