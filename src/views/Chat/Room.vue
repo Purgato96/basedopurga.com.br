@@ -514,7 +514,7 @@ function formatDate(timestamp) {
 watch(
   () => route.params.slug,
   async (newSlug, oldSlug) => {
-    if (newSlug && newSlug !== oldSlug) {
+    if (newSlug && oldSlug && newSlug !== oldSlug) {
       messages.value = [];
       conversations.value = [];
       currentConversation.value = null;
