@@ -355,19 +355,42 @@ function handleKeydown(e) {
 }
 
 async function selectMention(selectedUser) {
-  const input = messageInput.value;
-  if (!input || mentionStartIndex.value === -1) return;
-  const beforeMention = newMessage.value.substring(0, mentionStartIndex.value);
-  const afterCursor = newMessage.value.substring(input.selectionStart);
-  newMessage.value = beforeMention + '@' + selectedUser.name + ' ' + afterCursor;
-  nextTick(() => {
-    const newCursorPosition = mentionStartIndex.value + selectedUser.name.length + 2;
-    input.focus();
-    input.setSelectionRange(newCursorPosition, newCursorPosition);
-  });
+  // 1. Fecha o dropdown
   showMentionDropdown.value = false;
   mentionUsers.value = [];
   mentionStartIndex.value = -1;
+  newMessage.value = ''; // Limpa o input (ex: "Diego")
+
+  try {
+    console.log(`Iniciando conversa com ${selectedUser.name} (ID: ${selectedUser.id})...`);
+
+    // 2. Chama a API via composable
+    // (Isso chama o 'PrivateConversationController@start' com o { user_id: ... })
+    const newConversation = await startConversation(selectedUser.id);
+
+    if (!newConversation) {
+      throw new Error('Não foi possível obter a conversa da API');
+    }
+
+    console.log('Conversa recebida/criada:', newConversation.id);
+
+    // 3. Atualiza a lista da sidebar
+    await fetchConversations();
+
+    // 4. Muda para a aba "Privado"
+    activeTab.value = 'private';
+
+    // 5. Carrega as mensagens e define a conversa como ativa
+    // (Isso chama 'PrivateConversationController@show')
+    await openConversation(newConversation.id);
+
+    console.log('Conversa privada aberta.');
+    messageInput.value?.focus();
+
+  } catch (error) {
+    console.error('Erro ao iniciar conversa privada via @mention:', error);
+    alert('Não foi possível iniciar o chat privado. Verifique o console.');
+  }
 }
 
 function scrollToBottom(force = false) {
