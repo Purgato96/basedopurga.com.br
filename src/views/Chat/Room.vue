@@ -66,7 +66,7 @@
                   <div class="flex items-baseline space-x-1.5 mb-0.5">
                     <span v-if="message.user.id !== user?.id" class="text-xs font-semibold" :class="message.user.id === user?.id ? 'text-white text-opacity-90' : 'text-gray-700'">{{ message.user.name }}</span>
                     <span class="text-[9px] opacity-70" :class="message.user.id === user?.id ? 'text-blue-100' : 'text-gray-400'">
-                      {{ formatTime(message.created_at) }}
+                    {{ formatDate(message.created_at) }} - {{ formatTime(message.created_at) }}
                     </span>
                     <span v-if="message.edited_at" class="text-[9px] italic opacity-70" :class="message.user.id === user?.id ? 'text-blue-100' : 'text-gray-400'">(editada)</span>
                   </div>
@@ -91,7 +91,7 @@
                 <div :class="message.sender.id === user?.id ? msgSent : msgRecv" class="max-w-[70%] md:max-w-[60%] rounded-lg shadow-md px-3 py-2 relative">
                   <div class="flex items-baseline space-x-1.5 mb-0.5">
                     <span class="text-[9px] opacity-70" :class="message.sender.id === user?.id ? 'text-blue-100' : 'text-gray-400'">
-                      {{ formatTime(message.created_at) }}
+                    {{ formatDate(message.created_at) }} - {{ formatTime(message.created_at) }}
                     </span>
                     <span v-if="message.is_edited" class="text-[9px] italic opacity-70" :class="message.sender.id === user?.id ? 'text-blue-100' : 'text-gray-400'">(editada)</span>
                   </div>
